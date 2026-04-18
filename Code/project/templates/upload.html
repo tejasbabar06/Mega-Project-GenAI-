@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Dataset — MAFE Framework</title>
+  <meta name="description" content="Upload your CSV dataset for multi-agent feature engineering" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════ TOKENS ═══════════ */
+    :root {
+      --bg-dark:        #0a0e1a;
+      --bg-card:        #111827;
+      --bg-card-hover:  #1a2236;
+      --border:         rgba(99,130,255,0.15);
+      --border-bright:  rgba(99,130,255,0.45);
+      --accent-blue:    #6382ff;
+      --accent-purple:  #a855f7;
+      --accent-cyan:    #22d3ee;
+      --accent-green:   #34d399;
+      --accent-orange:  #fb923c;
+      --text-primary:   #e8eaf6;
+      --text-secondary: #8892b0;
+      --text-muted:     #4a5568;
+      --radius-lg:      16px;
+      --radius-md:      10px;
+      --radius-sm:      6px;
+      --transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+      --glow-blue:      0 0 40px rgba(99,130,255,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(99,130,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,130,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ═══════════ NAV ═══════════ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(10,14,26,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .nav-brand-text {
+      font-size: 1rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: var(--transition); }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent-blue); }
+
+    /* ═══════════ PAGE WRAPPER ═══════════ */
+    .page-wrapper {
+      position: relative; z-index: 1;
+      max-width: 1000px; margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .breadcrumb a { color: var(--accent-blue); text-decoration: none; }
+    .breadcrumb span { color: var(--text-muted); }
+
+    /* Page heading */
+    .page-heading { margin-bottom: 2.5rem; }
+    .page-heading h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .page-heading p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ═══════════ UPLOAD CARD ═══════════ */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .card-title .badge {
+      font-size: 0.7rem; font-weight: 600;
+      background: rgba(99,130,255,0.12);
+      border: 1px solid var(--border-bright);
+      color: var(--accent-blue);
+      border-radius: 50px;
+      padding: 2px 10px;
+    }
+
+    /* ── Drop Zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border-bright);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent-blue);
+      background: rgba(99,130,255,0.05);
+    }
+
+    .drop-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    .drop-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .drop-hint  { font-size: 0.83rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
+
+    #file-input { display: none; }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0.65rem 1.5rem;
+      border: 1px solid var(--border-bright);
+      border-radius: 50px;
+      background: transparent;
+      color: var(--accent-blue);
+      font-size: 0.88rem; font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-outline:hover { background: rgba(99,130,255,0.1); }
+
+    .file-chosen {
+      margin-top: 1rem;
+      font-size: 0.83rem;
+      color: var(--accent-green);
+      display: none;
+    }
+
+    /* ═══════════ PIPELINE CONFIG ═══════════ */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    select, input[type="number"] {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.7rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: var(--transition);
+      appearance: none;
+    }
+
+    select { cursor: pointer; }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(99,130,255,0.15);
+    }
+
+    select option { background: #1a2236; color: var(--text-primary); }
+
+    /* ═══════════ DATASET PREVIEW ═══════════ */
+    .preview-section { margin-top: 2.5rem; }
+
+    .preview-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .preview-title { font-size: 1rem; font-weight: 700; }
+
+    .stat-pills {
+      display: flex; gap: 10px;
+    }
+
+    .pill {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 50px;
+      border: 1px solid;
+    }
+
+    .pill-blue   { color: var(--accent-blue);   border-color: rgba(99,130,255,0.3);   background: rgba(99,130,255,0.08); }
+    .pill-purple { color: var(--accent-purple); border-color: rgba(168,85,247,0.3);  background: rgba(168,85,247,0.08); }
+    .pill-orange { color: var(--accent-orange); border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .table-wrapper table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+
+    .table-wrapper th {
+      background: rgba(99,130,255,0.08);
+      color: var(--accent-blue);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-wrapper td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .table-wrapper tr:last-child td { border-bottom: none; }
+    .table-wrapper tr:hover td { background: rgba(99,130,255,0.04); color: var(--text-primary); }
+
+    /* Missing values */
+    .missing-section { margin-top: 1.5rem; }
+    .missing-title   { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-secondary); }
+
+    .missing-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.55rem 1rem;
+      background: rgba(251,146,60,0.06);
+      border: 1px solid rgba(251,146,60,0.2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+
+    .missing-col { color: var(--text-primary); font-weight: 500; }
+    .missing-count {
+      background: rgba(251,146,60,0.15);
+      color: var(--accent-orange);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ═══════════ RUN BUTTON ═══════════ */
+    .run-section {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 0.85rem 2rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff; font-size: 0.95rem; font-weight: 600;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 0 30px rgba(99,130,255,0.25);
+      transition: var(--transition);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 50px rgba(99,130,255,0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.4; cursor: not-allowed; transform: none;
+    }
+
+    /* ═══════════ FLASH ═══════════ */
+    .flash-messages { position: fixed; top: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+    .flash-msg { padding: 14px 18px; border-radius: var(--radius-md); font-size: 0.88rem; font-weight: 500; backdrop-filter: blur(12px); animation: slideIn 0.3s ease; }
+    .flash-danger  { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    .flash-warning { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #fde047; }
+    .flash-success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #6ee7b7; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 768px) {
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════ NAV ══════ -->
+  <nav>
+    <a class="nav-brand" href="{{ url_for('index') }}">
+      <div class="nav-brand-icon">🤖</div>
+      <span class="nav-brand-text">MAFE Framework</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('upload_form') }}" class="active">Upload</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════ FLASH ══════ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="page-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span>/</span>
+      <span>Upload Dataset</span>
+    </div>
+
+    <!-- Heading -->
+    <div class="page-heading">
+      <h1>Upload Your <span class="gradient-text">Dataset</span></h1>
+      <p>Upload a CSV file and configure the pipeline. The three agents will analyse, plan, and engineer your features automatically.</p>
+    </div>
+
+    <!-- ── Step 1: Upload ── -->
+    <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data" id="upload-form">
+      <div class="card">
+        <div class="card-title">
+          📁 Step 1 — Upload CSV File
+          <span class="badge">Required</span>
+        </div>
+
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <span class="drop-icon">📂</span>
+          <div class="drop-title">Drag &amp; drop your CSV file here</div>
+          <div class="drop-hint">or click to browse · max 16 MB</div>
+          <button type="button" class="btn-outline">📤 Choose File</button>
+          <div class="file-chosen" id="file-chosen">✅ File selected: <span id="file-name"></span></div>
+        </div>
+
+        <input type="file" id="file-input" name="file" accept=".csv" required />
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="submit" class="btn-primary" id="upload-btn">
+          ⬆️ Upload &amp; Preview
+        </button>
+      </div>
+    </form>
+
+    <!-- ── Dataset Preview (shown after upload) ── -->
+    {% if preview %}
+    <div class="preview-section">
+      <div class="preview-header">
+        <div class="preview-title">📊 Dataset Preview — first 10 rows</div>
+        <div class="stat-pills">
+          <span class="pill pill-blue">{{ row_count }} rows</span>
+          <span class="pill pill-purple">{{ col_count }} columns</span>
+          {% if missing_summary %}
+            <span class="pill pill-orange">{{ missing_summary|length }} cols with missing</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        {{ preview | safe }}
+      </div>
+
+      {% if missing_summary %}
+      <div class="missing-section">
+        <div class="missing-title">⚠️ Missing Values Detected</div>
+        {% for col, count in missing_summary.items() %}
+          <div class="missing-item">
+            <span class="missing-col">{{ col }}</span>
+            <span class="missing-count">{{ count }} missing</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Step 2: Configure Pipeline ── -->
+    <div class="card" style="margin-top: 2rem;">
+      <div class="card-title">
+        ⚙️ Step 2 — Configure Pipeline
+        <span class="badge">Required</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('run_pipeline') }}" id="pipeline-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="target_column">🎯 Target Column</label>
+            <select name="target_column" id="target_column" required>
+              <option value="" disabled selected>— Select target column —</option>
+              {% for col in columns %}
+                <option value="{{ col }}">{{ col }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="method">🔬 Feature Selection Method</label>
+            <select name="method" id="method">
+              <optgroup label="── Filter Methods ──">
+                <option value="selectkbest">SelectKBest — ANOVA F-score (fast, univariate)</option>
+                <option value="mutualinfo">Mutual Information — captures non-linear deps</option>
+              </optgroup>
+              <optgroup label="── Tree-Based Methods ──">
+                <option value="randomforest">Random Forest — Gini importances</option>
+                <option value="gradientboosting">Gradient Boosting — sequential importances</option>
+                <option value="extratrees">Extra Trees — extremely randomised importances</option>
+              </optgroup>
+              <optgroup label="── Regularisation ──">
+                <option value="lasso">Lasso (L1) — shrinks weak features to zero</option>
+              </optgroup>
+              <optgroup label="── Dimensionality Reduction ──">
+                <option value="pca">PCA — principal components (unsupervised)</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="k_features">🔢 Number of Top Features (K)</label>
+            <input type="number" name="k_features" id="k_features"
+                   value="5" min="1" max="{{ col_count }}" />
+          </div>
+        </div>
+
+        <div class="run-section">
+          <span style="font-size:0.83rem; color: var(--text-muted);">
+            Agents will execute sequentially: Analysis → Planning → Selection
+          </span>
+          <button type="submit" class="btn-primary" id="run-btn">
+            🚀 Run Feature Engineering Pipeline
+          </button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+  </div><!-- /page-wrapper -->
+
+  <script>
+    // ── Drag & Drop ──────────────────────────────────────────────────
+    const dropZone  = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileChosen = document.getElementById('file-chosen');
+    const fileNameSpan = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameSpan.textContent = fileInput.files[0].name;
+        fileChosen.style.display = 'block';
+      }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        fileNameSpan.textContent = files[0].name;
+        fileChosen.style.display = 'block';
+      }
+    });
+
+    // ── Show loading state on run ────────────────────────────────────
+    const pipelineForm = document.getElementById('pipeline-form');
+    const runBtn       = document.getElementById('run-btn');
+
+    if (pipelineForm) {
+      pipelineForm.addEventListener('submit', () => {
+        runBtn.disabled    = true;
+        runBtn.textContent = '⏳ Running Pipeline …';
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+age,income,education,job_type,years_experience,credit_score,loan_amount,marital_status,num_dependents,region,defaulted
+35,55000,Bachelor,Private,10,720,15000,Married,2,Urban,0
+28,,High School,Government,5,650,8000,Single,0,Rural,0
+42,80000,Master,Private,18,780,30000,Married,3,Urban,0
+55,120000,PhD,Private,30,810,50000,Married,4,Urban,0
+23,32000,High School,Self,1,580,5000,Single,0,Rural,1
+31,47000,Bachelor,Government,8,700,12000,Single,1,Suburban,0
+60,90000,Master,Private,35,760,20000,Divorced,2,Urban,0
+29,,Bachelor,Self,4,620,9000,Single,0,Rural,1
+45,65000,,Government,20,740,18000,Married,3,Suburban,0
+38,72000,Bachelor,Private,13,730,22000,Married,2,Urban,0
+50,105000,PhD,Private,25,800,45000,Married,5,Urban,0
+26,38000,High School,Government,3,600,6000,Single,0,Rural,1
+33,53000,Bachelor,Self,9,690,13000,Married,1,Suburban,0
+47,88000,Master,Private,22,775,35000,Married,3,Urban,0
+21,28000,High School,Self,0,560,4000,Single,0,Rural,1
+39,67000,Bachelor,Government,15,715,17000,Married,2,Suburban,0
+54,115000,PhD,Private,28,820,55000,Married,4,Urban,0
+27,40000,Bachelor,Private,4,630,7500,Single,0,Suburban,0
+43,,Master,Government,19,755,28000,Divorced,2,Urban,0
+36,60000,Bachelor,Private,11,725,16000,Married,2,Urban,0
+52,98000,Master,Private,27,790,42000,Married,4,Urban,0
+24,30000,High School,Self,1,575,5500,Single,0,Rural,1
+30,45000,Bachelor,Government,6,680,10000,Single,1,Suburban,0
+48,82000,Bachelor,Private,23,750,25000,Married,3,Urban,0
+57,125000,PhD,Private,32,830,60000,Married,5,Urban,0
+22,27000,High School,Self,0,555,3500,Single,0,Rural,1
+41,70000,Master,Private,16,735,20000,Married,2,Urban,0
+34,56000,Bachelor,Government,10,710,14000,Married,1,Suburban,0
+46,85000,Master,Private,21,770,32000,Married,3,Urban,0
+25,35000,Bachelor,Self,2,610,6500,Single,0,Rural,1
+58,110000,PhD,Private,33,815,52000,Married,4,Urban,0
+32,50000,Bachelor,Government,8,695,11000,Single,1,Suburban,0
+44,75000,Bachelor,Private,20,745,24000,Married,3,Urban,0
+37,62000,Master,Government,13,720,19000,Married,2,Suburban,0
+49,92000,Master,Private,24,785,38000,Married,4,Urban,0
+20,25000,High School,Self,0,545,3000,Single,0,Rural,1
+56,118000,PhD,Private,31,825,58000,Married,5,Urban,0
+28,43000,Bachelor,Government,5,665,9500,Single,0,Suburban,0
+40,68000,Bachelor,Private,15,730,21000,Married,2,Urban,0
+53,100000,Master,Private,28,795,44000,Married,4,Urban,0
+19,22000,High School,Self,0,535,2500,Single,0,Rural,1
+35,58000,Bachelor,Government,10,715,15500,Married,1,Suburban,0
+51,95000,Master,Private,26,788,40000,Married,3,Urban,0
+26,37000,High School,Self,2,595,6000,Single,0,Rural,1
+38,,Bachelor,Private,14,722,17500,Married,2,Suburban,0
+59,122000,PhD,Private,34,828,62000,Married,5,Urban,0
+23,31000,High School,Government,1,590,5200,Single,0,Rural,1
+42,78000,Master,Private,18,760,29000,Married,3,Urban,0
+31,48000,Bachelor,Self,7,685,11500,Single,1,Suburban,0
+45,83000,Bachelor,Private,21,748,26000,Married,3,Urban,0

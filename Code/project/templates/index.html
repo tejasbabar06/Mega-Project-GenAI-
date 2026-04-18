@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Feature Engineering Framework</title>
+  <meta name="description"
+        content="A Constrained-Topology Multi-Agent LLM Framework for Planning-Based Feature Engineering" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ═══════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════ */
+    :root {
+      --bg-dark:        #0a0e1a;
+      --bg-card:        #111827;
+      --bg-card-hover:  #1a2236;
+      --border:         rgba(99, 130, 255, 0.15);
+      --border-bright:  rgba(99, 130, 255, 0.45);
+      --accent-blue:    #6382ff;
+      --accent-purple:  #a855f7;
+      --accent-cyan:    #22d3ee;
+      --accent-green:   #34d399;
+      --text-primary:   #e8eaf6;
+      --text-secondary: #8892b0;
+      --text-muted:     #4a5568;
+      --glow-blue:      0 0 40px rgba(99, 130, 255, 0.25);
+      --glow-purple:    0 0 40px rgba(168, 85, 247, 0.25);
+      --radius-lg:      16px;
+      --radius-md:      10px;
+      --transition:     all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,130,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,130,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       NAVIGATION
+    ═══════════════════════════════════════════════════════ */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .nav-brand-text {
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .nav-links a:hover { color: var(--accent-blue); }
+
+    /* ═══════════════════════════════════════════════════════
+       HERO SECTION
+    ═══════════════════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Radial glow behind hero */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 10%; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 500px;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(99, 130, 255, 0.12) 0%,
+        rgba(168, 85, 247, 0.07) 40%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 130, 255, 0.1);
+      border: 1px solid var(--border-bright);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 800px;
+      animation: fadeInUp 0.7s ease 0.1s both;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 50%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      margin-top: 1.25rem;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 580px;
+      line-height: 1.7;
+      animation: fadeInUp 0.7s ease 0.2s both;
+    }
+
+    /* ── CTA button ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2.5rem;
+      padding: 0.9rem 2.2rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: var(--glow-blue);
+      transition: var(--transition);
+      animation: fadeInUp 0.7s ease 0.3s both;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 60px rgba(99, 130, 255, 0.4);
+    }
+    .btn-primary:active { transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.85rem 2rem;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      border: 1px solid var(--border-bright);
+      border-radius: 50px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-left: 1rem;
+    }
+    .btn-secondary:hover {
+      background: rgba(99,130,255,0.08);
+      color: var(--text-primary);
+      border-color: var(--accent-blue);
+    }
+
+    .hero-cta { animation: fadeInUp 0.7s ease 0.3s both; }
+
+    /* ═══════════════════════════════════════════════════════
+       AGENT PIPELINE DIAGRAM
+    ═══════════════════════════════════════════════════════ */
+    .pipeline-section {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 3.5rem;
+    }
+
+    .pipeline-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.8rem;
+      width: 240px;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+
+    .agent-card.blue::before  { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+    .agent-card.purple::before{ background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+    .agent-card.green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+
+    .agent-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-6px);
+      box-shadow: var(--glow-blue);
+    }
+
+    .agent-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .agent-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--text-primary);
+    }
+
+    .agent-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .pipeline-arrow {
+      font-size: 1.5rem;
+      color: var(--accent-blue);
+      padding: 0 1rem;
+      opacity: 0.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FEATURE CARDS
+    ═══════════════════════════════════════════════════════ */
+    .features-section {
+      position: relative;
+      z-index: 1;
+      padding: 4rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.8rem;
+      transition: var(--transition);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .fi-blue   { background: rgba(99,130,255,0.12); }
+    .fi-purple { background: rgba(168,85,247,0.12); }
+    .fi-cyan   { background: rgba(34,211,238,0.12); }
+    .fi-green  { background: rgba(52,211,153,0.12); }
+
+    .feature-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-desc {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════ */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.83rem;
+    }
+
+    footer span { color: var(--accent-blue); }
+
+    /* ═══════════════════════════════════════════════════════
+       FLASH MESSAGES
+    ═══════════════════════════════════════════════════════ */
+    .flash-messages {
+      position: fixed;
+      top: 80px; right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 360px;
+    }
+
+    .flash-msg {
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 500;
+      backdrop-filter: blur(12px);
+      animation: slideIn 0.3s ease;
+    }
+
+    .flash-danger  { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    .flash-warning { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #fde047; }
+    .flash-success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #6ee7b7; }
+
+    /* ═══════════════════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; }
+      .pipeline-arrow { display: none; }
+      .pipeline-flow { gap: 1rem; }
+      .agent-card { width: 100%; max-width: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════ NAVIGATION ══════ -->
+  <nav>
+    <a class="nav-brand" href="{{ url_for('index') }}">
+      <div class="nav-brand-icon">🤖</div>
+      <span class="nav-brand-text">MAFE Framework</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('upload_form') }}">Upload</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════ FLASH MESSAGES ══════ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ══════ HERO ══════ -->
+  <section class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Research Prototype · 25 % Implementation
+    </div>
+
+    <h1 class="hero-title">
+      Multi-Agent <span class="gradient-text">Feature Engineering</span><br />
+      Powered by LLM Agents
+    </h1>
+
+    <p class="hero-subtitle">
+      A Constrained-Topology Multi-Agent Framework for Planning-Based
+      Feature Engineering — upload your dataset and watch three AI agents
+      collaborate to preprocess and select the best features automatically.
+    </p>
+
+    <div class="hero-cta">
+      <a class="btn-primary" href="{{ url_for('upload_form') }}" id="get-started-btn">
+        🚀 Get Started
+      </a>
+      <a class="btn-secondary" href="#pipeline">
+        ↓ Learn More
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════ PIPELINE SECTION ══════ -->
+  <section class="pipeline-section" id="pipeline">
+    <p class="section-label">Agent Architecture</p>
+    <h2 class="section-title">Three Agents · One Pipeline</h2>
+
+    <div class="pipeline-flow">
+      <div class="agent-card blue">
+        <div class="agent-icon">🔍</div>
+        <div class="agent-name">DataAnalysisAgent</div>
+        <div class="agent-desc">
+          Identifies column types, detects missing values, and produces a
+          structured analysis report.
+        </div>
+      </div>
+
+      <div class="pipeline-arrow">→</div>
+
+      <div class="agent-card purple">
+        <div class="agent-icon">🗺️</div>
+        <div class="agent-name">FeaturePlanningAgent</div>
+        <div class="agent-desc">
+          Decides the preprocessing pipeline — imputation, encoding, and
+          scaling strategies — based on the analysis.
+        </div>
+      </div>
+
+      <div class="pipeline-arrow">→</div>
+
+      <div class="agent-card green">
+        <div class="agent-icon">⭐</div>
+        <div class="agent-name">FeatureSelectionAgent</div>
+        <div class="agent-desc">
+          Executes the plan, then selects the most informative features via
+          SelectKBest or RandomForest importance.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ FEATURES ══════ -->
+  <section class="features-section">
+    <p class="section-label">What It Does</p>
+    <h2 class="section-title">Capabilities</h2>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon fi-blue">📊</div>
+        <div class="feature-title">Smart Data Analysis</div>
+        <div class="feature-desc">
+          Automatically classifies columns, counts missing values, and
+          summarises the dataset structure.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon fi-purple">⚙️</div>
+        <div class="feature-title">Automated Preprocessing</div>
+        <div class="feature-desc">
+          Mean / mode imputation, LabelEncoder for categoricals, and
+          StandardScaler for numerics — applied automatically.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon fi-cyan">🎯</div>
+        <div class="feature-title">Feature Selection</div>
+        <div class="feature-desc">
+          SelectKBest (ANOVA F-score) or RandomForest importances pick the
+          top-K most informative columns.
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon fi-green">📋</div>
+        <div class="feature-title">Agent Decision Logs</div>
+        <div class="feature-desc">
+          Every decision made by each agent is logged and displayed so you
+          can trace the full reasoning chain.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer>
+    <p>
+      Built with <span>Flask · Pandas · scikit-learn</span> &nbsp;·&nbsp;
+      Multi-Agent LLM Framework &copy; 2024
+    </p>
+  </footer>
+
+</body>
+</html>
