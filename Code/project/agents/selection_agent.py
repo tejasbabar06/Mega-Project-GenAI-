@@ -13,7 +13,8 @@ features using one of 7 available ML-based methods:
   6. mutualinfo       – Mutual Information (captures non-linear deps)
   7. pca              – PCA dimensionality reduction (returns components)
 
-Returns the processed dataset and the final list of selected features.
+Returns the processed dataset, selected features, feature importance
+scores, and PCA variance ratios (when applicable).
 """
 
 import pandas as pd
@@ -64,8 +65,10 @@ class FeatureSelectionAgent:
         Returns
         -------
         dict with keys:
-            processed_df     – fully preprocessed DataFrame (features only)
+            processed_df      – fully preprocessed DataFrame (features only)
             selected_features – list of chosen feature names
+            feature_scores    – dict {col: score} for ALL columns
+            pca_variance      – list of explained variance ratios (PCA only)
         """
         self.logs.clear()
         self._log("Received preprocessing plan. Starting execution …")
@@ -109,12 +112,32 @@ class FeatureSelectionAgent:
 
         # ── Feature selection ─────────────────────────────────────────
         selector = FeatureSelector(k=self.k_features, method=self.method)
-        selected_features = selector.select(X, y)
+        result   = selector.select(X, y)
+
+        selected_features = result["selected_features"]
+        feature_scores    = result["feature_scores"]
+        pca_variance      = result["pca_variance"]
 
         self._log(f"Selected features: {selected_features}")
+
+        # Log top feature scores
+        if feature_scores:
+            sorted_scores = sorted(feature_scores.items(),
+                                   key=lambda x: x[1], reverse=True)
+            top_n = min(5, len(sorted_scores))
+            self._log(f"Top {top_n} feature scores:")
+            for name, score in sorted_scores[:top_n]:
+                self._log(f"  → {name}: {score:.4f}")
+
+        if pca_variance:
+            total_var = sum(pca_variance) * 100
+            self._log(f"PCA total explained variance: {total_var:.1f}%")
+
         self._log("Feature selection complete.")
 
         return {
             "processed_df":      X,
             "selected_features": selected_features,
+            "feature_scores":    feature_scores,
+            "pca_variance":      pca_variance,
         }

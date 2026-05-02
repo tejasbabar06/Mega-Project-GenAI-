@@ -4,8 +4,10 @@
 
 from utils.preprocessing    import PreprocessingUtils
 from utils.feature_selection import FeatureSelector
+from utils.visualization     import VisualizationUtils
 
 __all__ = [
     "PreprocessingUtils",
     "FeatureSelector",
+    "VisualizationUtils",
 ]

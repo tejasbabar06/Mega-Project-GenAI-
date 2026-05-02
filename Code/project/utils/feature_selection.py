@@ -14,8 +14,12 @@ Supported methods
   'mutualinfo'        – Mutual Information scores (model-free)
   'pca'               – PCA dimensionality reduction (returns component labels)
 
-The class always returns a list of feature-name strings so downstream
-code never has to deal with raw score arrays or indices.
+Return format
+-------------
+Every method now returns a **dict** with keys:
+  selected_features  – list of feature name strings
+  feature_scores     – dict mapping ALL feature names → importance score
+  pca_variance       – list of explained variance ratios (PCA only, else None)
 """
 
 import pandas as pd
@@ -81,9 +85,9 @@ class FeatureSelector:
     # Public API
     # ------------------------------------------------------------------
 
-    def select(self, X: pd.DataFrame, y: pd.Series) -> list[str]:
+    def select(self, X: pd.DataFrame, y: pd.Series) -> dict:
         """
-        Run the chosen feature-selection method and return feature names.
+        Run the chosen feature-selection method and return a result dict.
 
         Parameters
         ----------
@@ -92,7 +96,10 @@ class FeatureSelector:
 
         Returns
         -------
-        List of selected feature names (length ≤ k).
+        dict with keys:
+            selected_features  – list of feature names (length ≤ k)
+            feature_scores     – dict {col: score} for ALL columns
+            pca_variance       – list of explained variance ratios (PCA only)
         """
         # Cap k so we never request more features than exist
         k_actual = min(self.k, X.shape[1])
@@ -121,7 +128,7 @@ class FeatureSelector:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _select_kbest(X: pd.DataFrame, y: np.ndarray, k: int) -> list[str]:
+    def _select_kbest(X: pd.DataFrame, y: np.ndarray, k: int) -> dict:
         """
         SelectKBest with f_classif (ANOVA F-statistic).
 
@@ -131,14 +138,23 @@ class FeatureSelector:
         """
         selector = SelectKBest(score_func=f_classif, k=k)
         selector.fit(X, y)
-        return list(X.columns[selector.get_support()])
+
+        # Build scores dict for ALL features
+        scores = dict(zip(X.columns.tolist(), selector.scores_.tolist()))
+        selected = list(X.columns[selector.get_support()])
+
+        return {
+            "selected_features": selected,
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 2: Random Forest ───────────────────────────────────────
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _select_rf(X: pd.DataFrame, y: np.ndarray, k: int) -> list[str]:
+    def _select_rf(X: pd.DataFrame, y: np.ndarray, k: int) -> dict:
         """
         RandomForestClassifier Gini impurity importances.
 
@@ -153,14 +169,21 @@ class FeatureSelector:
         )
         rf.fit(X, y)
         importances = pd.Series(rf.feature_importances_, index=X.columns)
-        return importances.nlargest(k).index.tolist()
+        scores = importances.to_dict()
+        selected = importances.nlargest(k).index.tolist()
+
+        return {
+            "selected_features": selected,
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 3: Lasso (L1 Regularisation) ──────────────────────────
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _select_lasso(X: pd.DataFrame, y: np.ndarray, k: int) -> list[str]:
+    def _select_lasso(X: pd.DataFrame, y: np.ndarray, k: int) -> dict:
         """
         Lasso regression via SelectFromModel.
 
@@ -175,6 +198,9 @@ class FeatureSelector:
         lasso = LassoCV(cv=5, random_state=42, max_iter=5000)
         lasso.fit(X, y)
 
+        coefs = pd.Series(np.abs(lasso.coef_), index=X.columns)
+        scores = coefs.to_dict()
+
         # Primary: features with non-zero coefficients
         sfm      = SelectFromModel(lasso, prefit=True)
         mask     = sfm.get_support()
@@ -182,11 +208,14 @@ class FeatureSelector:
 
         # Fallback: if Lasso zeroed everything or too few, use top-k by |coef|
         if len(selected) == 0 or len(selected) < k:
-            coefs    = pd.Series(np.abs(lasso.coef_), index=X.columns)
             selected = coefs.nlargest(k).index.tolist()
 
         # Always return exactly k (or fewer if dataset has fewer cols)
-        return selected[:k]
+        return {
+            "selected_features": selected[:k],
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 4: Gradient Boosting ───────────────────────────────────
@@ -194,7 +223,7 @@ class FeatureSelector:
 
     @staticmethod
     def _select_gradient_boosting(X: pd.DataFrame,
-                                  y: np.ndarray, k: int) -> list[str]:
+                                  y: np.ndarray, k: int) -> dict:
         """
         GradientBoostingClassifier feature importances.
 
@@ -211,7 +240,14 @@ class FeatureSelector:
         )
         gb.fit(X, y)
         importances = pd.Series(gb.feature_importances_, index=X.columns)
-        return importances.nlargest(k).index.tolist()
+        scores = importances.to_dict()
+        selected = importances.nlargest(k).index.tolist()
+
+        return {
+            "selected_features": selected,
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 5: Extra Trees ─────────────────────────────────────────
@@ -219,7 +255,7 @@ class FeatureSelector:
 
     @staticmethod
     def _select_extra_trees(X: pd.DataFrame,
-                            y: np.ndarray, k: int) -> list[str]:
+                            y: np.ndarray, k: int) -> dict:
         """
         ExtraTreesClassifier (Extremely Randomised Trees) importances.
 
@@ -234,7 +270,14 @@ class FeatureSelector:
         )
         et.fit(X, y)
         importances = pd.Series(et.feature_importances_, index=X.columns)
-        return importances.nlargest(k).index.tolist()
+        scores = importances.to_dict()
+        selected = importances.nlargest(k).index.tolist()
+
+        return {
+            "selected_features": selected,
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 6: Mutual Information ──────────────────────────────────
@@ -242,7 +285,7 @@ class FeatureSelector:
 
     @staticmethod
     def _select_mutual_info(X: pd.DataFrame,
-                            y: np.ndarray, k: int) -> list[str]:
+                            y: np.ndarray, k: int) -> dict:
         """
         Mutual Information (MI) scores via mutual_info_classif.
 
@@ -251,16 +294,23 @@ class FeatureSelector:
         that ANOVA F-score misses.
         Best for: datasets with complex, non-linear feature–target relationships.
         """
-        scores   = mutual_info_classif(X, y, random_state=42)
-        mi_series = pd.Series(scores, index=X.columns)
-        return mi_series.nlargest(k).index.tolist()
+        mi_scores = mutual_info_classif(X, y, random_state=42)
+        mi_series = pd.Series(mi_scores, index=X.columns)
+        scores = mi_series.to_dict()
+        selected = mi_series.nlargest(k).index.tolist()
+
+        return {
+            "selected_features": selected,
+            "feature_scores":    scores,
+            "pca_variance":      None,
+        }
 
     # ------------------------------------------------------------------
     # ── Method 7: PCA ─────────────────────────────────────────────────
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _select_pca(X: pd.DataFrame, y: np.ndarray, k: int) -> list[str]:
+    def _select_pca(X: pd.DataFrame, y: np.ndarray, k: int) -> dict:
         """
         Principal Component Analysis (PCA) dimensionality reduction.
 
@@ -274,9 +324,21 @@ class FeatureSelector:
         pca = PCA(n_components=k, random_state=42)
         pca.fit(X)
 
+        variance_ratios = pca.explained_variance_ratio_.tolist()
+
         # Build human-readable component labels with explained variance %
         labels = [
-            f"PC{i+1} ({pca.explained_variance_ratio_[i]*100:.1f}% var)"
+            f"PC{i+1} ({variance_ratios[i]*100:.1f}% var)"
             for i in range(k)
         ]
-        return labels
+
+        # For PCA, feature_scores = loading magnitudes per original feature
+        # (sum of absolute loadings across selected components)
+        loadings = np.abs(pca.components_).sum(axis=0)
+        scores = dict(zip(X.columns.tolist(), loadings.tolist()))
+
+        return {
+            "selected_features": labels,
+            "feature_scores":    scores,
+            "pca_variance":      variance_ratios,
+        }

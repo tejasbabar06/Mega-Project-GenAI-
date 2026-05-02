@@ -495,7 +495,7 @@
   <section class="hero">
     <div class="badge">
       <span class="badge-dot"></span>
-      Research Prototype · 25 % Implementation
+      Research Prototype · 75 % Implementation
     </div>
 
     <h1 class="hero-title">
@@ -552,7 +552,7 @@
         <div class="agent-name">FeatureSelectionAgent</div>
         <div class="agent-desc">
           Executes the plan, then selects the most informative features via
-          SelectKBest or RandomForest importance.
+          7 ML methods including PCA, with visualizations.
         </div>
       </div>
     </div>
@@ -584,19 +584,19 @@
 
       <div class="feature-card">
         <div class="feature-icon fi-cyan">🎯</div>
-        <div class="feature-title">Feature Selection</div>
+        <div class="feature-title">7 Selection Methods</div>
         <div class="feature-desc">
-          SelectKBest (ANOVA F-score) or RandomForest importances pick the
-          top-K most informative columns.
+          SelectKBest, RandomForest, Lasso, GradientBoosting, ExtraTrees,
+          Mutual Information, and PCA with importance scores.
         </div>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon fi-green">📋</div>
-        <div class="feature-title">Agent Decision Logs</div>
+        <div class="feature-icon fi-green">📊</div>
+        <div class="feature-title">Visualizations & Logs</div>
         <div class="feature-desc">
-          Every decision made by each agent is logged and displayed so you
-          can trace the full reasoning chain.
+          Missing values charts, feature importance bar charts, PCA variance
+          plots, and detailed agent decision logs.
         </div>
       </div>
     </div>

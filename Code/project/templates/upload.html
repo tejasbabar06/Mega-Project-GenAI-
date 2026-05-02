@@ -152,7 +152,13 @@
     .drop-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
     .drop-hint  { font-size: 0.83rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
 
-    #file-input { display: none; }
+    #file-input {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+    }
 
     .btn-outline {
       display: inline-flex; align-items: center; gap: 8px;
@@ -164,6 +170,7 @@
       font-size: 0.88rem; font-weight: 600;
       cursor: pointer;
       transition: var(--transition);
+      text-decoration: none;
     }
     .btn-outline:hover { background: rgba(99,130,255,0.1); }
 
@@ -172,6 +179,119 @@
       font-size: 0.83rem;
       color: var(--accent-green);
       display: none;
+    }
+
+    /* ═══════════ PREVIEW & DATA INFO ═══════════ */
+    .preview-section { margin-top: 2.5rem; }
+
+    .preview-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .preview-title { font-size: 1rem; font-weight: 700; }
+
+    .stat-pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 50px;
+      border: 1px solid;
+    }
+
+    .pill-blue   { color: var(--accent-blue);   border-color: rgba(99,130,255,0.3);   background: rgba(99,130,255,0.08); }
+    .pill-purple { color: var(--accent-purple); border-color: rgba(168,85,247,0.3);  background: rgba(168,85,247,0.08); }
+    .pill-orange { color: var(--accent-orange); border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
+    .pill-green  { color: var(--accent-green);  border-color: rgba(52,211,153,0.3);  background: rgba(52,211,153,0.08); }
+
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .table-wrapper table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+
+    .table-wrapper th {
+      background: rgba(99,130,255,0.08);
+      color: var(--accent-blue);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-wrapper td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .table-wrapper tr:last-child td { border-bottom: none; }
+    .table-wrapper tr:hover td { background: rgba(99,130,255,0.04); color: var(--text-primary); }
+
+    /* Column type badges in preview */
+    .col-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 50px;
+      border: 1px solid;
+      margin-left: 6px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .col-numeric {
+      color: var(--accent-blue);
+      border-color: rgba(99,130,255,0.3);
+      background: rgba(99,130,255,0.08);
+    }
+
+    .col-categorical {
+      color: var(--accent-purple);
+      border-color: rgba(168,85,247,0.3);
+      background: rgba(168,85,247,0.08);
+    }
+
+    /* Missing values */
+    .missing-section { margin-top: 1.5rem; }
+    .missing-title   { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-secondary); }
+
+    .missing-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.55rem 1rem;
+      background: rgba(251,146,60,0.06);
+      border: 1px solid rgba(251,146,60,0.2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.5rem;
+      font-size: 0.83rem;
+    }
+
+    .missing-col { color: var(--text-primary); font-weight: 500; }
+    .missing-count {
+      background: rgba(251,146,60,0.15);
+      color: var(--accent-orange);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
 
     /* ═══════════ PIPELINE CONFIG ═══════════ */
@@ -213,90 +333,6 @@
 
     select option { background: #1a2236; color: var(--text-primary); }
 
-    /* ═══════════ DATASET PREVIEW ═══════════ */
-    .preview-section { margin-top: 2.5rem; }
-
-    .preview-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1.25rem;
-    }
-
-    .preview-title { font-size: 1rem; font-weight: 700; }
-
-    .stat-pills {
-      display: flex; gap: 10px;
-    }
-
-    .pill {
-      font-size: 0.78rem; font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 50px;
-      border: 1px solid;
-    }
-
-    .pill-blue   { color: var(--accent-blue);   border-color: rgba(99,130,255,0.3);   background: rgba(99,130,255,0.08); }
-    .pill-purple { color: var(--accent-purple); border-color: rgba(168,85,247,0.3);  background: rgba(168,85,247,0.08); }
-    .pill-orange { color: var(--accent-orange); border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
-
-    /* Table */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-    }
-
-    .table-wrapper table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.83rem;
-    }
-
-    .table-wrapper th {
-      background: rgba(99,130,255,0.08);
-      color: var(--accent-blue);
-      font-weight: 600;
-      padding: 0.75rem 1rem;
-      text-align: left;
-      white-space: nowrap;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .table-wrapper td {
-      padding: 0.65rem 1rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-    }
-
-    .table-wrapper tr:last-child td { border-bottom: none; }
-    .table-wrapper tr:hover td { background: rgba(99,130,255,0.04); color: var(--text-primary); }
-
-    /* Missing values */
-    .missing-section { margin-top: 1.5rem; }
-    .missing-title   { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-secondary); }
-
-    .missing-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.55rem 1rem;
-      background: rgba(251,146,60,0.06);
-      border: 1px solid rgba(251,146,60,0.2);
-      border-radius: var(--radius-sm);
-      margin-bottom: 0.5rem;
-      font-size: 0.83rem;
-    }
-
-    .missing-col { color: var(--text-primary); font-weight: 500; }
-    .missing-count {
-      background: rgba(251,146,60,0.15);
-      color: var(--accent-orange);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
     /* ═══════════ RUN BUTTON ═══════════ */
     .run-section {
       display: flex;
@@ -306,6 +342,7 @@
       margin-top: 2rem;
       padding-top: 1.5rem;
       border-top: 1px solid var(--border);
+      flex-wrap: wrap;
     }
 
     .btn-primary {
@@ -316,6 +353,7 @@
       border: none; border-radius: 50px; cursor: pointer;
       box-shadow: 0 0 30px rgba(99,130,255,0.25);
       transition: var(--transition);
+      text-decoration: none;
     }
     .btn-primary:hover {
       transform: translateY(-2px) scale(1.02);
@@ -323,6 +361,21 @@
     }
     .btn-primary:disabled {
       opacity: 0.4; cursor: not-allowed; transform: none;
+    }
+
+    .btn-green {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 0.85rem 2rem;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+      color: #0a0e1a; font-size: 0.95rem; font-weight: 600;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 0 30px rgba(52,211,153,0.25);
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .btn-green:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 50px rgba(52,211,153,0.4);
     }
 
     /* ═══════════ FLASH ═══════════ */
@@ -380,7 +433,7 @@
     <!-- Heading -->
     <div class="page-heading">
       <h1>Upload Your <span class="gradient-text">Dataset</span></h1>
-      <p>Upload a CSV file and configure the pipeline. The three agents will analyse, plan, and engineer your features automatically.</p>
+      <p>Upload a CSV file to begin. The system will preview your data, then you can analyze it and run the multi-agent feature engineering pipeline.</p>
     </div>
 
     <!-- ── Step 1: Upload ── -->
@@ -399,11 +452,11 @@
           <div class="file-chosen" id="file-chosen">✅ File selected: <span id="file-name"></span></div>
         </div>
 
-        <input type="file" id="file-input" name="file" accept=".csv" required />
+        <input type="file" id="file-input" name="file" accept=".csv" />
       </div>
 
       <div style="display: flex; justify-content: flex-end;">
-        <button type="submit" class="btn-primary" id="upload-btn">
+        <button type="submit" class="btn-primary" id="upload-btn" onclick="return validateFile()">
           ⬆️ Upload &amp; Preview
         </button>
       </div>
@@ -419,8 +472,24 @@
           <span class="pill pill-purple">{{ col_count }} columns</span>
           {% if missing_summary %}
             <span class="pill pill-orange">{{ missing_summary|length }} cols with missing</span>
+          {% else %}
+            <span class="pill pill-green">No missing values</span>
           {% endif %}
         </div>
+      </div>
+
+      <!-- Column types legend -->
+      <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        {% for col in columns %}
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 0.82rem; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary);">{{ col }}</span>
+            {% if column_types and column_types[col] == 'numeric' %}
+              <span class="col-type-badge col-numeric">🔢 num</span>
+            {% elif column_types %}
+              <span class="col-type-badge col-categorical">🏷️ cat</span>
+            {% endif %}
+          </div>
+        {% endfor %}
       </div>
 
       <div class="table-wrapper">
@@ -440,61 +509,34 @@
       {% endif %}
     </div>
 
-    <!-- ── Step 2: Configure Pipeline ── -->
+    <!-- ── Step 2: Select Target & Analyze ── -->
     <div class="card" style="margin-top: 2rem;">
       <div class="card-title">
-        ⚙️ Step 2 — Configure Pipeline
+        🎯 Step 2 — Select Target Column & Analyze
         <span class="badge">Required</span>
       </div>
 
-      <form method="POST" action="{{ url_for('run_pipeline') }}" id="pipeline-form">
+      <form method="POST" action="{{ url_for('analyze_dataset') }}" id="analyze-form">
         <div class="form-row">
           <div class="form-group">
             <label for="target_column">🎯 Target Column</label>
             <select name="target_column" id="target_column" required>
               <option value="" disabled selected>— Select target column —</option>
               {% for col in columns %}
-                <option value="{{ col }}">{{ col }}</option>
+                <option value="{{ col }}">{{ col }}
+                  {% if column_types and column_types[col] == 'numeric' %} (numeric){% else %} (categorical){% endif %}
+                </option>
               {% endfor %}
             </select>
-          </div>
-
-          <div class="form-group">
-            <label for="method">🔬 Feature Selection Method</label>
-            <select name="method" id="method">
-              <optgroup label="── Filter Methods ──">
-                <option value="selectkbest">SelectKBest — ANOVA F-score (fast, univariate)</option>
-                <option value="mutualinfo">Mutual Information — captures non-linear deps</option>
-              </optgroup>
-              <optgroup label="── Tree-Based Methods ──">
-                <option value="randomforest">Random Forest — Gini importances</option>
-                <option value="gradientboosting">Gradient Boosting — sequential importances</option>
-                <option value="extratrees">Extra Trees — extremely randomised importances</option>
-              </optgroup>
-              <optgroup label="── Regularisation ──">
-                <option value="lasso">Lasso (L1) — shrinks weak features to zero</option>
-              </optgroup>
-              <optgroup label="── Dimensionality Reduction ──">
-                <option value="pca">PCA — principal components (unsupervised)</option>
-              </optgroup>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="k_features">🔢 Number of Top Features (K)</label>
-            <input type="number" name="k_features" id="k_features"
-                   value="5" min="1" max="{{ col_count }}" />
           </div>
         </div>
 
         <div class="run-section">
           <span style="font-size:0.83rem; color: var(--text-muted);">
-            Agents will execute sequentially: Analysis → Planning → Selection
+            DataAnalysisAgent will inspect your dataset and show a detailed report
           </span>
-          <button type="submit" class="btn-primary" id="run-btn">
-            🚀 Run Feature Engineering Pipeline
+          <button type="submit" class="btn-green" id="analyze-btn">
+            🔍 Analyze Dataset
           </button>
         </div>
       </form>
@@ -537,15 +579,24 @@
       }
     });
 
-    // ── Show loading state on run ────────────────────────────────────
-    const pipelineForm = document.getElementById('pipeline-form');
-    const runBtn       = document.getElementById('run-btn');
+    // ── Show loading state on analyze ────────────────────────────────
+    const analyzeForm = document.getElementById('analyze-form');
+    const analyzeBtn  = document.getElementById('analyze-btn');
 
-    if (pipelineForm) {
-      pipelineForm.addEventListener('submit', () => {
-        runBtn.disabled    = true;
-        runBtn.textContent = '⏳ Running Pipeline …';
+    if (analyzeForm) {
+      analyzeForm.addEventListener('submit', () => {
+        analyzeBtn.disabled    = true;
+        analyzeBtn.textContent = '⏳ Analyzing …';
       });
+    }
+
+    // ── File validation (replaces HTML required on hidden input) ─────
+    function validateFile() {
+      if (fileInput.files.length === 0) {
+        alert('Please select a CSV file before uploading.');
+        return false;
+      }
+      return true;
     }
   </script>
 

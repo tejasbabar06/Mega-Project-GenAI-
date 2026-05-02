@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dataset Analysis — MAFE Framework</title>
+  <meta name="description" content="Detailed dataset analysis showing column types, missing values, and visualizations" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════ TOKENS ═══════════ */
+    :root {
+      --bg-dark:        #0a0e1a;
+      --bg-card:        #111827;
+      --bg-card-hover:  #1a2236;
+      --border:         rgba(99,130,255,0.15);
+      --border-bright:  rgba(99,130,255,0.45);
+      --accent-blue:    #6382ff;
+      --accent-purple:  #a855f7;
+      --accent-cyan:    #22d3ee;
+      --accent-green:   #34d399;
+      --accent-orange:  #fb923c;
+      --text-primary:   #e8eaf6;
+      --text-secondary: #8892b0;
+      --text-muted:     #4a5568;
+      --radius-lg:      16px;
+      --radius-md:      10px;
+      --radius-sm:      6px;
+      --transition:     all 0.3s cubic-bezier(0.4,0,0.2,1);
+      --glow-blue:      0 0 40px rgba(99,130,255,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(99,130,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,130,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ═══════════ NAV ═══════════ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(10,14,26,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .nav-brand-text {
+      font-size: 1rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: var(--transition); }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent-blue); }
+
+    /* ═══════════ PAGE WRAPPER ═══════════ */
+    .page-wrapper {
+      position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .breadcrumb a { color: var(--accent-blue); text-decoration: none; }
+
+    /* Page heading */
+    .page-heading { margin-bottom: 2.5rem; }
+    .page-heading h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .page-heading p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ═══════════ STATS ROW ═══════════ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-3px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .stat-card.blue::before   { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+    .stat-card.green::before  { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+    .stat-card.orange::before { background: linear-gradient(90deg, var(--accent-orange), #fbbf24); }
+
+    .stat-label {
+      font-size: 0.76rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .stat-value {
+      font-size: 1.8rem; font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+
+    .stat-value.blue   { color: var(--accent-blue); }
+    .stat-value.purple { color: var(--accent-purple); }
+    .stat-value.green  { color: var(--accent-green); }
+    .stat-value.orange { color: var(--accent-orange); }
+
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ═══════════ CARD ═══════════ */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 1.75rem;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .card-title {
+      font-size: 1rem; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ═══════════ TABLE ═══════════ */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    .table-wrapper table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .table-wrapper th {
+      background: rgba(99,130,255,0.08);
+      color: var(--accent-blue);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-wrapper td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+    }
+
+    .table-wrapper tr:last-child td { border-bottom: none; }
+    .table-wrapper tr:hover td { background: rgba(99,130,255,0.04); color: var(--text-primary); }
+
+    /* Type badges */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 50px;
+      border: 1px solid;
+    }
+
+    .type-numeric {
+      color: var(--accent-blue);
+      border-color: rgba(99,130,255,0.3);
+      background: rgba(99,130,255,0.08);
+    }
+
+    .type-categorical {
+      color: var(--accent-purple);
+      border-color: rgba(168,85,247,0.3);
+      background: rgba(168,85,247,0.08);
+    }
+
+    .type-target {
+      color: var(--accent-green);
+      border-color: rgba(52,211,153,0.3);
+      background: rgba(52,211,153,0.08);
+    }
+
+    /* Missing bar inside table */
+    .missing-bar-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .missing-bar {
+      width: 80px;
+      height: 6px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .missing-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--accent-orange);
+      transition: width 0.5s ease;
+    }
+
+    .missing-pct {
+      font-size: 0.78rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-orange);
+      min-width: 40px;
+    }
+
+    /* ═══════════ CHART ═══════════ */
+    .chart-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.25rem;
+    }
+
+    .chart-wrapper img {
+      max-width: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+
+    /* ═══════════ LOGS ═══════════ */
+    .logs-container {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.8;
+    }
+
+    .logs-container::-webkit-scrollbar { width: 5px; }
+    .logs-container::-webkit-scrollbar-track { background: transparent; }
+    .logs-container::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 10px; }
+
+    .log-line {
+      padding: 3px 6px;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+
+    .log-line:hover { background: rgba(99,130,255,0.06); }
+    .log-line .log-tag { color: var(--accent-blue); font-weight: 600; }
+    .log-line .log-body { color: var(--text-secondary); }
+
+    /* ═══════════ PIPELINE CONFIG ═══════════ */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    select, input[type="number"] {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.7rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: var(--transition);
+      appearance: none;
+    }
+
+    select { cursor: pointer; }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(99,130,255,0.15);
+    }
+
+    select option { background: #1a2236; color: var(--text-primary); }
+
+    .run-section {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 0.85rem 2rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: #fff; font-size: 0.95rem; font-weight: 600;
+      border: none; border-radius: 50px; cursor: pointer;
+      box-shadow: 0 0 30px rgba(99,130,255,0.25);
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 50px rgba(99,130,255,0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.4; cursor: not-allowed; transform: none;
+    }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 0.75rem 1.75rem;
+      background: transparent;
+      color: var(--text-secondary); font-size: 0.9rem; font-weight: 500;
+      border: 1px solid var(--border-bright); border-radius: 50px;
+      cursor: pointer; text-decoration: none;
+      transition: var(--transition);
+    }
+    .btn-outline:hover {
+      background: rgba(99,130,255,0.08);
+      color: var(--text-primary);
+      border-color: var(--accent-blue);
+    }
+
+    .action-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    /* ═══════════ FLASH ═══════════ */
+    .flash-messages { position: fixed; top: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+    .flash-msg { padding: 14px 18px; border-radius: var(--radius-md); font-size: 0.88rem; font-weight: 500; backdrop-filter: blur(12px); animation: slideIn 0.3s ease; }
+    .flash-danger  { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+    .flash-warning { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #fde047; }
+    .flash-success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #6ee7b7; }
+
+    /* ═══════════ ANIMATIONS ═══════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .card:nth-child(2) { animation-delay: 0.05s; }
+    .card:nth-child(3) { animation-delay: 0.10s; }
+    .card:nth-child(4) { animation-delay: 0.15s; }
+
+    @media (max-width: 768px) {
+      .form-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════ NAV ══════ -->
+  <nav>
+    <a class="nav-brand" href="{{ url_for('index') }}">
+      <div class="nav-brand-icon">🤖</div>
+      <span class="nav-brand-text">MAFE Framework</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      <li><a href="{{ url_for('upload_form') }}">Upload</a></li>
+      <li><a href="#" class="active">Analysis</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════ FLASH ══════ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="page-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">Home</a>
+      <span>/</span>
+      <a href="{{ url_for('upload_form') }}">Upload</a>
+      <span>/</span>
+      <span>Analysis</span>
+    </div>
+
+    <!-- Heading -->
+    <div class="page-heading">
+      <h1>Dataset <span class="gradient-text">Analysis</span></h1>
+      <p>DataAnalysisAgent has inspected your dataset. Review column types, missing values, and data summary below before running the full pipeline.</p>
+    </div>
+
+    <!-- ══════ SUMMARY STATS ══════ -->
+    <div class="stats-row">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Rows</div>
+        <div class="stat-value blue">{{ row_count }}</div>
+        <div class="stat-sub">observations</div>
+      </div>
+
+      <div class="stat-card purple">
+        <div class="stat-label">Total Columns</div>
+        <div class="stat-value purple">{{ col_count }}</div>
+        <div class="stat-sub">including target</div>
+      </div>
+
+      <div class="stat-card green">
+        <div class="stat-label">Numeric Features</div>
+        <div class="stat-value green">{{ analysis_report.numeric_cols | length }}</div>
+        <div class="stat-sub">continuous variables</div>
+      </div>
+
+      <div class="stat-card orange">
+        <div class="stat-label">Categorical Features</div>
+        <div class="stat-value orange">{{ analysis_report.categorical_cols | length }}</div>
+        <div class="stat-sub">discrete variables</div>
+      </div>
+    </div>
+
+    <!-- ══════ COLUMN TYPES TABLE ══════ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          📋 Column Type Analysis
+        </div>
+        <span style="font-size:0.78rem; color:var(--text-muted);">
+          Memory: {{ memory_mb }} MB
+        </span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Column Name</th>
+              <th>Type</th>
+              <th>Unique Values</th>
+              <th>Missing</th>
+              <th>% Missing</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for col in column_info %}
+            <tr>
+              <td style="color:var(--text-muted);">{{ loop.index }}</td>
+              <td>
+                <span style="font-weight:600; color:var(--text-primary); font-family:'JetBrains Mono',monospace; font-size:0.82rem;">
+                  {{ col.name }}
+                </span>
+              </td>
+              <td>
+                {% if col.is_target %}
+                  <span class="type-badge type-target">🎯 target</span>
+                {% elif col.type == 'numeric' %}
+                  <span class="type-badge type-numeric">🔢 numeric</span>
+                {% else %}
+                  <span class="type-badge type-categorical">🏷️ categorical</span>
+                {% endif %}
+              </td>
+              <td style="font-family:'JetBrains Mono',monospace; font-size:0.8rem;">
+                {{ col.unique }}
+              </td>
+              <td>
+                {% if col.missing > 0 %}
+                <div class="missing-bar-wrapper">
+                  <div class="missing-bar">
+                    <div class="missing-bar-fill" style="width: {{ [col.pct_missing, 100] | min }}%"></div>
+                  </div>
+                  <span style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--accent-orange);">
+                    {{ col.missing }}
+                  </span>
+                </div>
+                {% else %}
+                <span style="color:var(--accent-green); font-size:0.8rem;">✓ None</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if col.pct_missing > 0 %}
+                  <span class="missing-pct">{{ col.pct_missing }}%</span>
+                {% else %}
+                  <span style="color:var(--accent-green); font-size:0.8rem;">0%</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════ MISSING VALUES CHART ══════ -->
+    {% if missing_chart %}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          📊 Missing Values Visualization
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <img src="data:image/png;base64,{{ missing_chart }}" alt="Missing Values Bar Chart" />
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ══════ AGENT LOGS ══════ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          🔍 DataAnalysisAgent Logs
+        </div>
+      </div>
+      <div class="logs-container">
+        {% for log in logs %}
+          <div class="log-line">
+            <span class="log-tag">{{ log.split(']')[0] }}]</span>
+            <span class="log-body">{{ log.split(']', 1)[1] }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ══════ CONFIGURE PIPELINE ══════ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          ⚙️ Configure & Run Pipeline
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('run_pipeline') }}" id="pipeline-form">
+        <input type="hidden" name="target_column" value="{{ target_column }}" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="method">🔬 Feature Selection Method</label>
+            <select name="method" id="method">
+              <optgroup label="── Filter Methods ──">
+                <option value="selectkbest">SelectKBest — ANOVA F-score (fast, univariate)</option>
+                <option value="mutualinfo">Mutual Information — captures non-linear deps</option>
+              </optgroup>
+              <optgroup label="── Tree-Based Methods ──">
+                <option value="randomforest">Random Forest — Gini importances</option>
+                <option value="gradientboosting">Gradient Boosting — sequential importances</option>
+                <option value="extratrees">Extra Trees — extremely randomised importances</option>
+              </optgroup>
+              <optgroup label="── Regularisation ──">
+                <option value="lasso">Lasso (L1) — shrinks weak features to zero</option>
+              </optgroup>
+              <optgroup label="── Dimensionality Reduction ──">
+                <option value="pca">PCA — principal components (unsupervised)</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="k_features">🔢 Number of Top Features (K)</label>
+            <input type="number" name="k_features" id="k_features"
+                   value="5" min="1" max="{{ col_count }}" />
+          </div>
+        </div>
+
+        <div class="run-section">
+          <span style="font-size:0.83rem; color: var(--text-muted);">
+            Target: <strong style="color:var(--accent-blue);">{{ target_column }}</strong> &nbsp;|&nbsp;
+            Agents will execute: Analysis → Planning → Selection
+          </span>
+          <button type="submit" class="btn-primary" id="run-btn">
+            🚀 Run Feature Engineering Pipeline
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ══════ ACTION ROW ══════ -->
+    <div class="action-row">
+      <a href="{{ url_for('upload_form') }}" class="btn-outline">
+        ← Upload New Dataset
+      </a>
+    </div>
+
+  </div><!-- /page-wrapper -->
+
+  <script>
+    // Show loading state on run
+    const pipelineForm = document.getElementById('pipeline-form');
+    const runBtn       = document.getElementById('run-btn');
+
+    if (pipelineForm) {
+      pipelineForm.addEventListener('submit', () => {
+        runBtn.disabled    = true;
+        runBtn.textContent = '⏳ Running Pipeline …';
+      });
+    }
+  </script>
+
+</body>
+</html>
