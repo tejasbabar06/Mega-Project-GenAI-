@@ -1,0 +1,24 @@
+<!-- Main Application Container -->
+<div class="app-wrapper">
+  <!-- App Header -->
+  <header class="app-header">
+    <h1>🎓 {{ title }}</h1>
+    <p class="subtitle">Manage your students with ease</p>
+  </header>
+
+  <!-- Student Input Component: emits studentAdded event -->
+  <app-student-input
+    (studentAdded)="onStudentAdded($event)"
+  ></app-student-input>
+
+  <!-- Student List Component: receives students array, emits studentDeleted event -->
+  <app-student-list
+    [students]="students"
+    (studentDeleted)="onStudentDeleted($event)"
+  ></app-student-list>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Student Manager Lite &mdash; Built with Angular</p>
+  </footer>
+</div>

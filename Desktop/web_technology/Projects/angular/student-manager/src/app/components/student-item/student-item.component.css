@@ -1,0 +1,89 @@
+/* ===== Student Card ===== */
+.student-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: slideIn 0.35s ease-out;
+}
+
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Slide-in Animation ===== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== Student Info Layout ===== */
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.student-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.student-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.student-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.student-age {
+  font-size: 0.85rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* ===== Delete Button ===== */
+.delete-btn {
+  background: #fff0f0;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #ffe0e0;
+  transform: scale(1.15);
+}
+
+.delete-btn:active {
+  transform: scale(0.95);
+}

@@ -1,0 +1,25 @@
+<!-- Student List Section -->
+<div class="list-container">
+  <div class="list-header">
+    <h2>📋 Student List</h2>
+    <!-- Interpolation to show total count -->
+    <span class="badge">{{ students.length }} student{{ students.length !== 1 ? 's' : '' }}</span>
+  </div>
+
+  <!-- *ngIf: Show message when list is empty -->
+  <div *ngIf="students.length === 0" class="empty-state">
+    <div class="empty-icon">🎓</div>
+    <p>No students added yet.</p>
+    <p class="empty-hint">Use the form above to add your first student!</p>
+  </div>
+
+  <!-- *ngFor: Render each student using the StudentItemComponent -->
+  <div *ngIf="students.length > 0" class="student-list">
+    <app-student-item
+      *ngFor="let student of students; let i = index"
+      [student]="student"
+      [index]="i + 1"
+      (studentDeleted)="onDeleteStudent($event)"
+    ></app-student-item>
+  </div>
+</div>

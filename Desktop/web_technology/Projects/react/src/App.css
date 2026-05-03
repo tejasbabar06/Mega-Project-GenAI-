@@ -1,0 +1,148 @@
+/* ===== Global Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+}
+
+/* ===== App Container - Centered Card ===== */
+.app-container {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Title ===== */
+.app-title {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+/* ===== Task Input Form ===== */
+.task-input-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.task-input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.task-input:focus {
+  border-color: #4a90d9;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}
+
+.btn-add {
+  background-color: #4a90d9;
+  color: white;
+}
+
+.btn-complete {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* ===== Task Stats ===== */
+.task-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 4px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  color: #555;
+  border-bottom: 1px solid #eee;
+}
+
+/* ===== Task List ===== */
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== Single Task Item ===== */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+/* Completed task - strike-through text */
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.task-text {
+  flex: 1;
+  font-size: 1rem;
+  color: #333;
+  word-break: break-word;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.task-actions .btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+/* ===== No Tasks Message ===== */
+.no-tasks {
+  text-align: center;
+  color: #999;
+  font-size: 0.95rem;
+  padding: 20px 0;
+}

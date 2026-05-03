@@ -1,0 +1,16 @@
+<!-- Single Student Card -->
+<div class="student-card">
+  <div class="student-info">
+    <!-- Display index and student details using interpolation {{ }} -->
+    <span class="student-index">{{ index }}</span>
+    <div class="student-details">
+      <span class="student-name">{{ student.name }}</span>
+      <span class="student-age">Age: {{ student.age }}</span>
+    </div>
+  </div>
+
+  <!-- Event binding: (click) triggers delete -->
+  <button class="delete-btn" (click)="onDelete()" title="Remove student">
+    🗑️
+  </button>
+</div>

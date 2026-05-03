@@ -1,0 +1,34 @@
+<!-- Student Input Form Section -->
+<div class="input-container">
+  <h2>📝 Add New Student</h2>
+
+  <div class="form-group">
+    <!-- Name input with two-way binding using [(ngModel)] -->
+    <label for="studentName">Student Name</label>
+    <input
+      type="text"
+      id="studentName"
+      [(ngModel)]="studentName"
+      placeholder="Enter student name"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="form-group">
+    <!-- Age input with two-way binding using [(ngModel)] -->
+    <label for="studentAge">Student Age</label>
+    <input
+      type="number"
+      id="studentAge"
+      [(ngModel)]="studentAge"
+      placeholder="Enter student age"
+      min="1"
+      max="120"
+    />
+  </div>
+
+  <!-- Event binding: (click) calls onAddStudent() -->
+  <button class="add-btn" (click)="onAddStudent()">
+    ➕ Add Student
+  </button>
+</div>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quote Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        select, button {
+            padding: 8px 12px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        #quote {
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        #author {
+            font-style: italic;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Quote Generator</h2>
+
+    <select id="category">
+        <option value="motivational">Motivation</option>
+        <option value="love">Love</option>
+        <option value="success">Success</option>
+    </select>
+
+    <div id="quote">Click below to get a quote!</div>
+    <div id="author"></div>
+
+    <button id="newQuote">New Quote</button>
+    <button id="copyBtn">Copy</button>
+</div>
+
+<script>
+    const quoteText = document.getElementById("quote");
+    const authorText = document.getElementById("author");
+    const newQuoteBtn = document.getElementById("newQuote");
+    const copyBtn = document.getElementById("copyBtn");
+    const categorySelect = document.getElementById("category");
+
+    const colors = ["#FF9A9E", "#A18CD1", "#FBC2EB", "#84FAB0", "#FFD3A5"];
+
+    function changeBackground() {
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        document.body.style.background = randomColor;
+    }
+
+    function fetchQuote() {
+    const category = categorySelect.value;
+
+    fetch(`https://dummyjson.com/quotes/random`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+            quoteText.innerText = data.quote;
+            authorText.innerText = "- " + data.author;
+            changeBackground();
+        })
+        .catch(error => {
+            quoteText.innerText = "Failed to fetch quote!";
+            console.error("Error:", error);
+        });
+}
+
+    newQuoteBtn.addEventListener("click", fetchQuote);
+
+    copyBtn.addEventListener("click", () => {
+        const textToCopy = quoteText.innerText + " " + authorText.innerText;
+
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => alert("Copied to clipboard!"))
+            .catch(() => alert("Copy failed!"));
+    });
+</script>
+
+</body>
+</html>
